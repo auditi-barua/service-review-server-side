@@ -33,12 +33,27 @@ const run = async () => {
 
 
 
+    app.get('/services_h', async (req, res) => {
+      const query = {}
+      const cursor = Services_Collection.find(query);
+      const services = await cursor.limit(3).toArray();
+      console.log(services)
+      res.send(services);
+    });
+
     app.get('/services', async (req, res) => {
       const query = {}
       const cursor = Services_Collection.find(query);
       const services = await cursor.toArray();
       console.log(services)
       res.send(services);
+    });
+
+    app.post('/add_review', async (req, res) => {
+      const review = req.body;
+      console.log(review)
+      const result = await Review_Collection.insertOne(review);
+      res.json(result);
     });
 
     app.get('/reviews', async (req, res) => {
@@ -54,6 +69,33 @@ const run = async () => {
       const reviews = await cursor.toArray();
       res.send(reviews);
     })
+
+    app.get('/reviews', varifyToken, async (req, res) => {
+      console.log({ email: req.query.email })
+      const cursor = Review_Collection.find({ category: req.query.email });
+      const reviews = await cursor.toArray();
+      res.send(reviews);
+    });
+
+    app.get('/my_reviews/:id', async (req, res) => {
+      const query = { _id: ObjectId(req.params.id) };
+      const service = await Review_Collection.findOne(query);
+      res.send(service);
+    });
+
+    app.patch('/my_reviews/:id', async (req, res) => {
+      const query = { _id: ObjectId(req.params.id) };
+      const updateDoc = { $set: req.body };
+      const result = await Review_Collection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.delete('/my_reviews/:id', async (req, res) => {
+      const query = { _id: ObjectId(req.params.id) };
+      const result = await Review_Collection.deleteOne(query);
+      res.send(result);
+    });
+
 
   } finally {
     // Ensures that the client will close when you finish/error
